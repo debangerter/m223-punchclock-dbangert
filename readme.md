@@ -52,6 +52,12 @@ classDiagram
     class DatabaseContext {
         +DbSet[Entry] Entries
     }
+    
+    EntryController --> EntryService
+    EntryController --> Entry
+    EntryService --> DatabaseContext
+    EntryService --> Entry
+    DatabaseContext --> Entry
 ```
 
 ## ERD
@@ -70,14 +76,32 @@ erDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant Web as Web App
+    participant Api as Controller
+    participant Service
+    participant Context as Database Context
     participant DB as Database
-    User ->> Web: GET /entries/get
-    Web ->> DB: FindAll()
-    DB -->> Web: List[Entry]
-    Web ->> User: 200 OK List[Entry]
-    User ->> Web: POST /entries/addentry
-    Web ->> DB: Create(Entry entry)
-    DB -->> Web: Entry
-    Web ->> User: 201 Created Entry
+    User ->> Api: HTTP GET /entries
+    Api ->> Service: FindAll()
+    Service ->> Context: .Entries.ToListAsync()
+    Context -->> DB: SELECT * FROM Entry
+    DB -->> Context: Entry Records
+    Context ->> Service: List[Entry]
+    Service ->> Api: List[Entry]
+    Api ->> User: HTTP 200 OK { entries: [] }
+```
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Api as Controller
+    participant Service
+    participant Context as Database Context
+    participant DB as Database
+    User ->> Api: HTTP POST /entries
+    Api ->> Service: AddEntry()
+    Service ->> Context: .Entries.Add()
+    Context -->> DB: INSERT INTO Entry
+    Context ->> Service: Entry
+    Service ->> Api: Entry
+    Api ->> User: HTTP 200 OK { entry: {} }
 ```
