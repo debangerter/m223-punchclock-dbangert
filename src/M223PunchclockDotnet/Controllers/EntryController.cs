@@ -15,17 +15,17 @@ namespace M223PunchclockDotnet.Controllers
         [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
-            List<EntryDto> allEntries = await entryService.FindAll();
-            return Ok(allEntries);
+            List<EntryDto> entryDtos = await entryService.FindAll();
+            return Ok(entryDtos);
         }
 
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType<EntryDto>(StatusCodes.Status201Created)]
-        public async Task<ActionResult<EntryDto>> AddEntry([FromBody] EntryDto entry)
+        public async Task<ActionResult<EntryDto>> AddEntry([FromBody] EntryDto entryDto)
         {
-            EntryDto newElement = await entryService.AddEntry(entry);
-            return CreatedAtAction(nameof(Get), new { id = newElement.Id }, newElement);
+            EntryDto newEntry = await entryService.AddEntry(entryDto);
+            return CreatedAtAction(nameof(Get), new { id = newEntry.Id }, newEntry);
         }
 
         [HttpDelete("{id:int}")]
@@ -40,9 +40,9 @@ namespace M223PunchclockDotnet.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateEntry(int id, [FromBody] EntryDto entry)
+        public async Task<IActionResult> UpdateEntry(int id, [FromBody] EntryDto entryDto)
         {
-            EntryDto? updatedEntry = await entryService.UpdateEntry(id, entry);
+            EntryDto? updatedEntry = await entryService.UpdateEntry(id, entryDto);
 
             return updatedEntry is null ? NotFound() : Ok(updatedEntry);
         }
@@ -51,9 +51,9 @@ namespace M223PunchclockDotnet.Controllers
         [Consumes(MediaTypeNames.Application.JsonPatch)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
-        public async Task<IActionResult> PatchEntry(int id, [FromBody] JsonPatchDocument<Entry> patchDocument)
+        public async Task<IActionResult> PatchEntry(int id, [FromBody] JsonPatchDocument<Entry> entryPatch)
         {
-            EntryDto? updatedEntry = await entryService.UpdateEntry(id, patchDocument);
+            EntryDto? updatedEntry = await entryService.UpdateEntry(id, entryPatch);
 
             return updatedEntry is null ? NotFound() : Ok(updatedEntry);
         }

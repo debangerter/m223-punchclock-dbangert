@@ -1,29 +1,34 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace M223PunchclockDotnet.Model.Dto;
 
-public class EntryDto : IValidatableObject
+public record EntryDto : AbstractDto<Entry>
 {
-    // ReSharper disable once MemberCanBePrivate.Global Reason: Needed for JSON-Serialization
-    public int Id { get; protected init; }
-    
-    [Required(ErrorMessage = "Missing Check-In")]
-    public DateTime? CheckIn {  get; init; }
-    
-    [Required(ErrorMessage = "Missing Check-Out")]
-    public DateTime? CheckOut { get; init; }
-
-    public static EntryDto FromModel(Entry entry)
+    [JsonConstructor]
+    public EntryDto(int id, DateTime? checkIn, DateTime? checkOut)
     {
-        return new EntryDto
-        {
-            Id = entry.Id,
-            CheckIn = entry.CheckIn,
-            CheckOut = entry.CheckOut,
-        };
+        Id = id;
+        CheckIn = checkIn;
+        CheckOut = checkOut;
     }
-    
-    public Entry ToModel()
+
+    public EntryDto(Entry model) : base(model)
+    {
+        Id = model.Id;
+        CheckIn = model.CheckIn;
+        CheckOut = model.CheckOut;
+    }
+
+    public int Id { get; }
+
+    [Required(ErrorMessage = "Missing Check-In")]
+    public DateTime? CheckIn { get; }
+
+    [Required(ErrorMessage = "Missing Check-Out")]
+    public DateTime? CheckOut { get; }
+
+    public override Entry ToModel()
     {
         return new Entry
         {
@@ -33,14 +38,15 @@ public class EntryDto : IValidatableObject
         };
     }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (CheckIn is null || CheckOut is null)  yield break;
-    
+        if (CheckIn is null || CheckOut is null) yield break;
+
         if (CheckIn.Value.Kind is not DateTimeKind.Utc || CheckOut.Value.Kind is not DateTimeKind.Utc)
             yield return new ValidationResult("Check-In and Check-Out must be of type UTC");
-    
-        if (CheckIn.Value > CheckOut.Value) 
-            yield return new ValidationResult("Cannot check-out before checking in", [nameof(CheckIn), nameof(CheckOut)]);
+
+        if (CheckIn.Value > CheckOut.Value)
+            yield return new ValidationResult("Cannot check-out before checking in",
+                [nameof(CheckIn), nameof(CheckOut)]);
     }
 }

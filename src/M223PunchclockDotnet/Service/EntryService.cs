@@ -14,15 +14,15 @@ namespace M223PunchclockDotnet.Service
         {
             List<Entry> entries = await databaseContext.Entries.ToListAsync();
             
-            return [.. entries.Select(EntryDto.FromModel)];
+            return [.. entries.Select(entry => new EntryDto(entry))];
         }
 
-        public async Task<EntryDto> AddEntry(EntryDto entry)
+        public async Task<EntryDto> AddEntry(EntryDto entryDto)
         {
-            EntityEntry<Entry> newEntry = databaseContext.Entries.Add(entry.ToModel());
+            EntityEntry<Entry> entityEntry = databaseContext.Entries.Add(entryDto.ToModel());
             await databaseContext.SaveChangesAsync();
 
-            return EntryDto.FromModel(newEntry.Entity);
+            return new EntryDto(entityEntry.Entity);
         }
 
         public async Task<bool> DeleteEntry(int id)
@@ -35,27 +35,27 @@ namespace M223PunchclockDotnet.Service
             return true;
         }
 
-        public async Task<EntryDto?> UpdateEntry(int id, EntryDto entry)
+        public async Task<EntryDto?> UpdateEntry(int id, EntryDto entryDto)
         {
-            if (await databaseContext.Entries.FindAsync(id) is not { } existingEntry) return null;
+            if (await databaseContext.Entries.FindAsync(id) is not { } entry) return null;
 
-            existingEntry.CheckIn = entry.CheckIn!.Value;
-            existingEntry.CheckOut = entry.CheckOut!.Value;
+            entry.CheckIn = entryDto.CheckIn!.Value;
+            entry.CheckOut = entryDto.CheckOut!.Value;
 
             await databaseContext.SaveChangesAsync();
 
-            return EntryDto.FromModel(existingEntry);
+            return new EntryDto(entry);
         }
 
-        public async Task<EntryDto?> UpdateEntry(int id, JsonPatchDocument<Entry> entry)
+        public async Task<EntryDto?> UpdateEntry(int id, JsonPatchDocument<Entry> entryPatch)
         {
-            if (await databaseContext.Entries.FindAsync(id) is not { } existingEntry) return null;
+            if (await databaseContext.Entries.FindAsync(id) is not { } entry) return null;
 
-            entry.ApplyTo(existingEntry);
+            entryPatch.ApplyTo(entry);
             
             await databaseContext.SaveChangesAsync();
 
-            return EntryDto.FromModel(existingEntry);
+            return new EntryDto(entry);
         }
     }
 }
