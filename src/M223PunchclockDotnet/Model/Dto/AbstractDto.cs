@@ -14,7 +14,10 @@ public abstract record AbstractDto<TModel> : IValidatableObject
     {
     }
 
+    public int Id { get; protected init; }
+    
     public abstract TModel ToModel();
 
     public abstract IEnumerable<ValidationResult> Validate(ValidationContext validationContext);
+
 }

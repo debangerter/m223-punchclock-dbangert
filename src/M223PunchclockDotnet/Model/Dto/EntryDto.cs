@@ -6,11 +6,13 @@ namespace M223PunchclockDotnet.Model.Dto;
 public record EntryDto : AbstractDto<Entry>
 {
     [JsonConstructor]
-    public EntryDto(int id, DateTime? checkIn, DateTime? checkOut)
+    public EntryDto(int id, DateTime? checkIn, DateTime? checkOut, int? categoryId, Category? category)
     {
         Id = id;
         CheckIn = checkIn;
         CheckOut = checkOut;
+        CategoryId = categoryId;
+        Category = category;
     }
 
     public EntryDto(Entry model) : base(model)
@@ -18,15 +20,19 @@ public record EntryDto : AbstractDto<Entry>
         Id = model.Id;
         CheckIn = model.CheckIn;
         CheckOut = model.CheckOut;
+        CategoryId = model.CategoryId;
+        Category = model.Category;
     }
-
-    public int Id { get; }
 
     [Required(ErrorMessage = "Missing Check-In")]
     public DateTime? CheckIn { get; }
 
     [Required(ErrorMessage = "Missing Check-Out")]
     public DateTime? CheckOut { get; }
+    
+    public int? CategoryId { get; }
+    
+    public Category? Category { get; }
 
     public override Entry ToModel()
     {
@@ -34,7 +40,7 @@ public record EntryDto : AbstractDto<Entry>
         {
             Id = Id,
             CheckIn = CheckIn!.Value,
-            CheckOut = CheckOut!.Value,
+            CheckOut = CheckOut!.Value
         };
     }
 
