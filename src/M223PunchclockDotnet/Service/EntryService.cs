@@ -10,19 +10,17 @@ namespace M223PunchclockDotnet.Service
     [UsedImplicitly]
     public class EntryService(DatabaseContext databaseContext)
     {
-        public async Task<List<EntryDto>> FindAll()
+        public Task<List<Entry>> FindAll()
         {
-            List<Entry> entries = await databaseContext.Entries.ToListAsync();
-            
-            return [.. entries.Select(entry => new EntryDto(entry))];
+            return databaseContext.Entries.ToListAsync();
         }
 
-        public async Task<EntryDto> AddEntry(EntryDto entryDto)
+        public async Task<Entry> AddEntry(Entry entry)
         {
-            EntityEntry<Entry> entityEntry = databaseContext.Entries.Add(entryDto.ToModel());
+            EntityEntry<Entry> entityEntry = databaseContext.Entries.Add(entry);
             await databaseContext.SaveChangesAsync();
 
-            return new EntryDto(entityEntry.Entity);
+            return entityEntry.Entity;
         }
 
         public async Task<bool> DeleteEntry(int id)
@@ -35,19 +33,19 @@ namespace M223PunchclockDotnet.Service
             return true;
         }
 
-        public async Task<EntryDto?> UpdateEntry(int id, EntryDto entryDto)
+        public async Task<Entry?> UpdateEntry(int id, Entry entry)
         {
-            if (await databaseContext.Entries.FindAsync(id) is not { } entry) return null;
+            if (await databaseContext.Entries.FindAsync(id) is not { } existingEntry) return null;
 
-            entry.CheckIn = entryDto.CheckIn!.Value;
-            entry.CheckOut = entryDto.CheckOut!.Value;
+            existingEntry.CheckIn = entry.CheckIn;
+            existingEntry.CheckOut = entry.CheckOut;
 
             await databaseContext.SaveChangesAsync();
 
-            return new EntryDto(entry);
+            return existingEntry;
         }
 
-        public async Task<EntryDto?> UpdateEntry(int id, JsonPatchDocument<Entry> entryPatch)
+        public async Task<Entry?> UpdateEntry(int id, JsonPatchDocument<Entry> entryPatch)
         {
             if (await databaseContext.Entries.FindAsync(id) is not { } entry) return null;
 
@@ -55,7 +53,7 @@ namespace M223PunchclockDotnet.Service
             
             await databaseContext.SaveChangesAsync();
 
-            return new EntryDto(entry);
+            return entry;
         }
     }
 }
