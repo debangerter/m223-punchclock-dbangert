@@ -30,18 +30,19 @@ public abstract class AbstractController<TDto, TModel>(IService<TModel> service)
 
     [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
-    public virtual async Task<IActionResult> AddModel([FromBody] TDto modelDto, params object?[]? args)
+    public virtual async Task<IActionResult> AddModel([FromBody] TDto modelDto)
     {
         TModel newModel = await service.Add(modelDto.ToModel());
         
-        OnBeforeAddModel(ref newModel, args);
+        await OnBeforeAddModelAsync(modelDto, newModel);
         
         TDto newModelDto = GetDto(newModel);
         return CreatedAtAction(nameof(GetModels), new { id = newModelDto.Id }, newModelDto);
     }
 
-    protected virtual void OnBeforeAddModel(ref TModel model, params object?[]? args)
+    protected virtual Task OnBeforeAddModelAsync(TDto modelDto, TModel model)
     {
+        return Task.CompletedTask;
     }
 
     [HttpDelete("{id:int}")]
@@ -55,18 +56,18 @@ public abstract class AbstractController<TDto, TModel>(IService<TModel> service)
     [HttpPut("{id:int}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public virtual async Task<IActionResult> UpdateEntry(int id, [FromBody] TDto modelDto, params object?[]? args)
+    public virtual async Task<IActionResult> UpdateEntry(int id, [FromBody] TDto modelDto)
     {
         TModel modelToUpdate = modelDto.ToModel();
         
-        OnBeforeUpdateModel(ref modelToUpdate, args);
+        OnBeforeUpdateModel(ref modelToUpdate);
         
         TModel? updatedModel = await service.Update(id, modelToUpdate);
 
         return updatedModel is null ? NotFound() : Ok(GetDto(updatedModel));
     }
     
-    protected virtual void OnBeforeUpdateModel(ref TModel model, params object?[]? args)
+    protected virtual void OnBeforeUpdateModel(ref TModel model)
     {
     }
 

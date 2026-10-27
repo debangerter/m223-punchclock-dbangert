@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace M223PunchclockDotnet.Controllers;
 
 [Route("tags")]
-public sealed class TagController(IService<Tag> service) 
+public sealed class TagController(IService<Tag> service)
     : AbstractController<TagDto, Tag>(service)
 {
     [ProducesResponseType<TagDto>(StatusCodes.Status200OK)]
