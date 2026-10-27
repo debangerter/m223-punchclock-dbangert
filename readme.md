@@ -66,9 +66,29 @@ classDiagram
 erDiagram
     Entry {
         integer Id PK "auto increment"
+        integer CategoryId FK
         timestamp CheckIn
         timestamp CheckOut
     }
+    
+    Category {
+        integer Id PK "auto increment"
+        varchar(255) Title
+    }
+    
+    Tag {
+        integer Id PK "auto increment"
+        varchar(255) Title
+    }
+    
+    Entry_Tag {
+        integer EntryId PK
+        integer TagId PK
+    }
+    
+    Entry }o--o| Category : has
+    Entry ||--o{ Entry_Tag : has
+    Tag ||--o{ Entry_Tag : has
 ```
 
 ## Sequenzdiagramme
