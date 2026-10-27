@@ -1,7 +1,9 @@
 ﻿using JetBrains.Annotations;
 using M223PunchclockDotnet.Model;
+using M223PunchclockDotnet.Model.Dto;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace M223PunchclockDotnet.Service
 {
@@ -15,27 +17,26 @@ namespace M223PunchclockDotnet.Service
 
         public async Task<Entry> AddEntry(Entry entry)
         {
-            databaseContext.Entries.Add(entry);
+            EntityEntry<Entry> entityEntry = databaseContext.Entries.Add(entry);
             await databaseContext.SaveChangesAsync();
 
-            return entry;
+            return entityEntry.Entity;
         }
 
-        public async Task DeleteEntry(int id)
+        public async Task<bool> DeleteEntry(int id)
         {
-            Entry? entry = await databaseContext.Entries.FindAsync(id);
-            if (entry is null) return;
+            if (await databaseContext.Entries.FindAsync(id) is not { } entry) return false;
+            
             databaseContext.Entries.Remove(entry);
             await databaseContext.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<Entry?> UpdateEntry(int id, Entry entry)
         {
-            Entry? existingEntry = await databaseContext.Entries.FindAsync(id);
+            if (await databaseContext.Entries.FindAsync(id) is not { } existingEntry) return null;
 
-            if (existingEntry is null) return null;
-
-            existingEntry.Id = entry.Id;
             existingEntry.CheckIn = entry.CheckIn;
             existingEntry.CheckOut = entry.CheckOut;
 
@@ -44,18 +45,15 @@ namespace M223PunchclockDotnet.Service
             return existingEntry;
         }
 
-        public async Task<Entry?> UpdateEntry(int id, JsonPatchDocument<Entry> entry)
+        public async Task<Entry?> UpdateEntry(int id, JsonPatchDocument<Entry> entryPatch)
         {
-            Entry? existingEntry = await databaseContext.Entries.FindAsync(id);
+            if (await databaseContext.Entries.FindAsync(id) is not { } entry) return null;
 
-            if (existingEntry is null) return null;
-
-            databaseContext.Attach(existingEntry);
-            entry.ApplyTo(existingEntry);
+            entryPatch.ApplyTo(entry);
             
             await databaseContext.SaveChangesAsync();
 
-            return existingEntry;
+            return entry;
         }
     }
 }
