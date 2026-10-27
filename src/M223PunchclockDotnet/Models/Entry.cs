@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace M223PunchclockDotnet.Model;
+namespace M223PunchclockDotnet.Models;
 
 public class Entry : AbstractDbModel
 {
@@ -11,4 +11,6 @@ public class Entry : AbstractDbModel
     public int? CategoryId { get; set; }
 
     public Category? Category { get; set; }
+
+    public ICollection<Tag> Tags { get; set; } = [];
 }

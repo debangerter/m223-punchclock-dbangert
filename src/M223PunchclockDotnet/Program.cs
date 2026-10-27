@@ -1,5 +1,6 @@
-using M223PunchclockDotnet.Model;
-using M223PunchclockDotnet.Service;
+using M223PunchclockDotnet.Database;
+using M223PunchclockDotnet.Models;
+using M223PunchclockDotnet.Services;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -15,8 +16,10 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
-builder.Services.AddScoped<EntryService, EntryService>();
+builder.Services.AddScoped<IService<Category>, CategoryService>();
+builder.Services.AddScoped<IService<Entry>, EntryService>();
+builder.Services.AddScoped<IService<EntryDetail>, EntryDetailService>();
+builder.Services.AddScoped<IService<Tag>, TagService>();
 
 WebApplication app = builder.Build();
 

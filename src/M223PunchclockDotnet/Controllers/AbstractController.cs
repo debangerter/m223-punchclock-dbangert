@@ -1,18 +1,17 @@
 using System.Net.Mime;
 using System.Reflection;
-using M223PunchclockDotnet.Model;
-using M223PunchclockDotnet.Model.Dto;
-using M223PunchclockDotnet.Service;
+using M223PunchclockDotnet.Models;
+using M223PunchclockDotnet.Models.Dto;
+using M223PunchclockDotnet.Services;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 
 namespace M223PunchclockDotnet.Controllers;
 
 [ApiController]
-public abstract class AbstractController<TDto, TService, TModel>(TService service) : ControllerBase
+public abstract class AbstractController<TDto, TModel>(IService<TModel> service) : ControllerBase
     where TModel : AbstractDbModel
     where TDto : AbstractDto<TModel>
-    where TService : AbstractService<TModel>
 {
     private static readonly ConstructorInfo? DtoConstructor = typeof(TDto).GetConstructor([typeof(TModel)]);
 
@@ -22,20 +21,27 @@ public abstract class AbstractController<TDto, TService, TModel>(TService servic
           ?? throw new Exception($"{typeof(TDto).Name}'s constructor returns null");
 
     [HttpGet]
-    public virtual async Task<IActionResult> GetModel()
+    public virtual async Task<IActionResult> GetModels()
     {
         List<TModel> models = await service.FindAll();
 
-        return Ok(models.Select(model => GetDto?.Invoke(model)));
+        return Ok(models.Select(model => GetDto(model)));
     }
 
     [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
-    public virtual async Task<ActionResult<TDto>> AddModel([FromBody] TDto modelDto)
+    public virtual async Task<IActionResult> AddModel([FromBody] TDto modelDto, params object?[]? args)
     {
         TModel newModel = await service.Add(modelDto.ToModel());
+        
+        OnBeforeAddModel(ref newModel, args);
+        
         TDto newModelDto = GetDto(newModel);
-        return CreatedAtAction(typeof(TModel).Name, new { id = newModelDto.Id }, newModelDto);
+        return CreatedAtAction(nameof(GetModels), new { id = newModelDto.Id }, newModelDto);
+    }
+
+    protected virtual void OnBeforeAddModel(ref TModel model, params object?[]? args)
+    {
     }
 
     [HttpDelete("{id:int}")]
@@ -49,11 +55,19 @@ public abstract class AbstractController<TDto, TService, TModel>(TService servic
     [HttpPut("{id:int}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public virtual async Task<IActionResult> UpdateEntry(int id, [FromBody] TDto modelDto)
+    public virtual async Task<IActionResult> UpdateEntry(int id, [FromBody] TDto modelDto, params object?[]? args)
     {
-        TModel? updatedModel = await service.Update(id, modelDto.ToModel());
+        TModel modelToUpdate = modelDto.ToModel();
+        
+        OnBeforeUpdateModel(ref modelToUpdate, args);
+        
+        TModel? updatedModel = await service.Update(id, modelToUpdate);
 
         return updatedModel is null ? NotFound() : Ok(GetDto(updatedModel));
+    }
+    
+    protected virtual void OnBeforeUpdateModel(ref TModel model, params object?[]? args)
+    {
     }
 
     [HttpPatch("{id:int}")]

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace M223PunchclockDotnet.Model.Dto;
+namespace M223PunchclockDotnet.Models.Dto;
 
 public abstract record AbstractDto<TModel> : IValidatableObject
 {
@@ -15,9 +15,8 @@ public abstract record AbstractDto<TModel> : IValidatableObject
     }
 
     public int Id { get; protected init; }
-    
-    public abstract TModel ToModel();
 
     public abstract IEnumerable<ValidationResult> Validate(ValidationContext validationContext);
 
+    public abstract TModel ToModel();
 }

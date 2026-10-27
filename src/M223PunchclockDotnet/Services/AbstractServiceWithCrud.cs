@@ -1,12 +1,12 @@
-using System.Diagnostics.CodeAnalysis;
-using M223PunchclockDotnet.Model;
+using M223PunchclockDotnet.Database;
+using M223PunchclockDotnet.Models;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace M223PunchclockDotnet.Service;
+namespace M223PunchclockDotnet.Services;
 
-public abstract class AbstractService<TModel>(DatabaseContext databaseContext)
+public abstract class AbstractServiceWithCrud<TModel>(DatabaseContext databaseContext) : IService<TModel> 
     where TModel : AbstractDbModel
 {
     public Task<List<TModel>> FindAll()
@@ -15,7 +15,13 @@ public abstract class AbstractService<TModel>(DatabaseContext databaseContext)
         return Includes(query).ToListAsync();
     }
 
-    public async Task<TModel> Add(TModel model)
+    public Task<TModel?> FindById(int id)
+    {
+        IQueryable<TModel> query = databaseContext.Set<TModel>().AsQueryable();
+        return Includes(query).FirstOrDefaultAsync(model => model.Id == id);
+    }
+
+    public virtual async Task<TModel> Add(TModel model)
     {
         EntityEntry<TModel> entityEntry = databaseContext.Set<TModel>().Add(model);
         await databaseContext.SaveChangesAsync();

@@ -1,22 +1,23 @@
-using M223PunchclockDotnet.Model;
-using M223PunchclockDotnet.Model.Dto;
-using M223PunchclockDotnet.Service;
+using M223PunchclockDotnet.Models;
+using M223PunchclockDotnet.Models.Dto;
+using M223PunchclockDotnet.Services;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 
 namespace M223PunchclockDotnet.Controllers;
 
 [Route("categories")]
-public class CategoryController(CategoryService categoryService) : AbstractController<CategoryDto, CategoryService, Category>(categoryService)
+public sealed class CategoryController(IService<Category> service)
+    : AbstractController<CategoryDto, Category>(service)
 {
     [ProducesResponseType<CategoryDto>(StatusCodes.Status200OK)]
-    public override Task<IActionResult> GetModel()
+    public override Task<IActionResult> GetModels()
     {
-        return base.GetModel();
+        return base.GetModels();
     }
 
     [ProducesResponseType<CategoryDto>(StatusCodes.Status201Created)]
-    public override Task<ActionResult<CategoryDto>> AddModel(CategoryDto modelDto)
+    public override Task<IActionResult> AddModel(CategoryDto modelDto)
     {
         return base.AddModel(modelDto);
     }
