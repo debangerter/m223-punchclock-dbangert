@@ -69,6 +69,7 @@ erDiagram
         integer CategoryId FK
         timestamp CheckIn
         timestamp CheckOut
+        integer ApplicationUserId FK
     }
     
     Category {
@@ -86,9 +87,17 @@ erDiagram
         integer TagId PK
     }
     
+    ApplicationUser {
+        integer Id PK "auto increment"
+        varchar(255) Username
+        varchar(255) Password
+        varchar(255) Email
+    }
+    
     Entry }o--o| Category : has
     Entry ||--o{ Entry_Tag : has
     Tag ||--o{ Entry_Tag : has
+    ApplicationUser ||--o{ Entry : has
 ```
 
 ## Sequenzdiagramme
@@ -124,4 +133,66 @@ sequenceDiagram
     Context ->> Service: Entry
     Service ->> Api: Entry
     Api ->> User: HTTP 200 OK { entry: {} }
+```
+
+```mermaid
+---
+title: Login (Identity Server)
+---
+sequenceDiagram
+    actor User
+    participant Api as Controller
+    participant Service
+    participant Context as Database Context
+    participant DB as Database
+    User ->> Api: HTTP POST /login
+    Api ->> Service: FindById()
+    Service ->> Context: .ApplicationUsers.FindById()
+    Context -->> DB: SELECT * FROM ApplicationUser<br />WHERE Username = ... AND Password = ...
+    DB -->> Context: ApplicationUser Record
+    Context ->> Service: ApplicationUser
+    Service ->> Api: ApplicationUser
+    Api ->> Api: GenerateAndSignTokens()
+    Api ->> User: HTTP 200 OK<br />{ access_token: {}, refresh_token: {} }
+```
+
+```mermaid
+---
+title: Authentication Fail
+---
+sequenceDiagram
+    actor User
+    participant Api as Controller
+    User ->> Api: HTTP GET /entries<br />Authorization: Bearer <access_token>
+    Api ->> Api: DecodeAndVerifyToken()
+    Api ->> User: HTTP 401 Unauthorized
+```
+
+```mermaid
+---
+title: Authentication Success
+---
+sequenceDiagram
+    actor User
+    participant Api as Controller
+    participant Service
+    User ->> Api: HTTP GET /entries<br />Authorization: Bearer <access_token>
+    Api ->> Api: DecodeAndVerifyToken()
+    Api -->> Service: FindAll()
+    Service ->> Service: GetAllEntries()
+    Service ->> Api: Entries
+    Api ->> User: HTTP 200 OK { entries: [] }
+```
+
+```mermaid
+---
+title: Logout
+---
+sequenceDiagram
+    actor User
+    participant Api as Controller
+    User ->> Api: HTTP POST /logout
+    Api ->> Api: DecodeAndVerifyToken()
+    Api ->> Api: DeleteToken()
+    Api ->> User: HTTP 204 No Content
 ```
