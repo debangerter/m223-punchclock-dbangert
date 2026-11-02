@@ -9,9 +9,15 @@
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14"/>
         <PackageReference Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" Version="10.0.14"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Helpers\"/>
+        <Folder Include="Keys\"/>
     </ItemGroup>
 
 </Project>

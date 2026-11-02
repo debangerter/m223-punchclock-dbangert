@@ -1,11 +1,13 @@
 using M223PunchclockDotnet.Models;
 using M223PunchclockDotnet.Models.Dto;
 using M223PunchclockDotnet.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 
 namespace M223PunchclockDotnet.Controllers;
 
+[Authorize]
 [Route("entries")]
 public sealed class EntryController(IService<Entry> service, IService<Tag> tagService)
     : AbstractController<EntryDto, Entry>(service)
