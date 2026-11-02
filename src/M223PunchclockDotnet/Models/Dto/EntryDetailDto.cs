@@ -6,7 +6,8 @@ namespace M223PunchclockDotnet.Models.Dto;
 public record EntryDetailDto : AbstractDto<EntryDetail>
 {
     [JsonConstructor]
-    public EntryDetailDto(int id, DateTime? checkIn, DateTime? checkOut, CategoryDto? categoryDto, ICollection<TagDto> tagDtos)
+    public EntryDetailDto(int id, DateTime? checkIn, DateTime? checkOut, CategoryDto? categoryDto,
+        ICollection<TagDto> tagDtos)
     {
         Id = id;
         CheckIn = checkIn;
@@ -14,7 +15,7 @@ public record EntryDetailDto : AbstractDto<EntryDetail>
         Category = categoryDto;
         Tags = tagDtos;
     }
-    
+
     public EntryDetailDto(EntryDetail model) : base(model)
     {
         Id = model.Id;
@@ -23,17 +24,17 @@ public record EntryDetailDto : AbstractDto<EntryDetail>
         Category = model.Category is null ? null : new CategoryDto(model.Category);
         Tags = [.. model.Tags.Select(tag => new TagDto(tag))];
     }
-    
+
     [Required(ErrorMessage = "Missing Check-In")]
     public DateTime? CheckIn { get; }
-    
+
     [Required(ErrorMessage = "Missing Check-Out")]
     public DateTime? CheckOut { get; }
-    
+
     public CategoryDto? Category { get; }
 
     public ICollection<TagDto> Tags { get; } = [];
-    
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (CheckIn is null || CheckOut is null) yield break;
@@ -54,7 +55,7 @@ public record EntryDetailDto : AbstractDto<EntryDetail>
             CheckIn = CheckIn!.Value,
             CheckOut = CheckOut!.Value,
             Category = Category?.ToModel(),
-            Tags = [.. Tags.Select(tagDto => tagDto.ToModel())],
+            Tags = [.. Tags.Select(tagDto => tagDto.ToModel())]
         };
     }
 }

@@ -30,7 +30,7 @@ public record CategoryDto : AbstractDto<Category>
         return new Category
         {
             Id = Id,
-            Title = Title!,
+            Title = Title!
         };
     }
 

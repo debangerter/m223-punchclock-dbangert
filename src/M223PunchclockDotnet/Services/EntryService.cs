@@ -9,8 +9,6 @@ public sealed class EntryService(DatabaseContext databaseContext) : AbstractServ
 {
     public override Task<Entry> Add(Entry model)
     {
-        
-        
         return base.Add(model);
     }
 

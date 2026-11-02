@@ -40,7 +40,7 @@ public record EntryDto : AbstractDto<Entry>
         {
             Id = Id,
             CheckIn = CheckIn!.Value,
-            CheckOut = CheckOut!.Value,
+            CheckOut = CheckOut!.Value
         };
     }
 
