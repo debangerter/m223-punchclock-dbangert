@@ -5,7 +5,8 @@ using M223PunchclockDotnet.Models;
 namespace M223PunchclockDotnet.Services;
 
 [UsedImplicitly]
-public sealed class CategoryService(DatabaseContext databaseContext) : AbstractServiceWithCrud<Category>(databaseContext)
+public sealed class CategoryService(DatabaseContext databaseContext)
+    : AbstractServiceWithCrud<Category>(databaseContext)
 {
     protected override void UpdateModel(Category existingModel, Category model)
     {

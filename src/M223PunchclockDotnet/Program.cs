@@ -6,6 +6,12 @@ using Microsoft.EntityFrameworkCore;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IService<Category>, CategoryService>();
+builder.Services.AddScoped<IService<Entry>, EntryService>();
+builder.Services.AddScoped<IService<EntryDetail>, EntryDetailService>();
+builder.Services.AddScoped<IService<Tag>, TagService>();
+
+builder.Services.AddScoped<ExampleDataService>();
 
 builder.Services.AddControllers();
 
@@ -15,11 +21,6 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddScoped<IService<Category>, CategoryService>();
-builder.Services.AddScoped<IService<Entry>, EntryService>();
-builder.Services.AddScoped<IService<EntryDetail>, EntryDetailService>();
-builder.Services.AddScoped<IService<Tag>, TagService>();
 
 WebApplication app = builder.Build();
 
@@ -43,6 +44,12 @@ using (IServiceScope scope = app.Services.CreateScope())
     context.Database.EnsureDeleted();
     context.Database.EnsureCreated();
     // DbInitializer.Initialize(context);
+
+    if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("Punchclock:ExampleData:Enabled"))
+    {
+        ExampleDataService exampleDataService = services.GetRequiredService<ExampleDataService>();
+        await exampleDataService.CreateExampleDataAsync();
+    }
 }
 
 app.UseDefaultFiles();

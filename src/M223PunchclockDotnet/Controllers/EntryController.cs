@@ -58,10 +58,8 @@ public sealed class EntryController(IService<Entry> service, IService<Tag> tagSe
         HashSet<int> tagIds = [.. tags.Select(tag => tag.Id)];
 
         foreach (int tagId in modelDto.TagIds)
-        {
             if (!tagIds.Contains(tagId))
                 return $"{nameof(Tag)}-ID {tagId}";
-        }
 
         return null;
     }

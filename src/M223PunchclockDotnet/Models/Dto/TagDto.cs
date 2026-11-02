@@ -31,7 +31,7 @@ public record TagDto : AbstractDto<Tag>
         return new Tag
         {
             Id = Id,
-            Title = Title!,
+            Title = Title!
         };
     }
 

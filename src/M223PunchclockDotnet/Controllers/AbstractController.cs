@@ -33,9 +33,9 @@ public abstract class AbstractController<TDto, TModel>(IService<TModel> service)
     public virtual async Task<IActionResult> AddModel([FromBody] TDto modelDto)
     {
         TModel newModel = await service.Add(modelDto.ToModel());
-        
+
         await OnBeforeAddModelAsync(modelDto, newModel);
-        
+
         TDto newModelDto = GetDto(newModel);
         return CreatedAtAction(nameof(GetModels), new { id = newModelDto.Id }, newModelDto);
     }
@@ -59,14 +59,14 @@ public abstract class AbstractController<TDto, TModel>(IService<TModel> service)
     public virtual async Task<IActionResult> UpdateEntry(int id, [FromBody] TDto modelDto)
     {
         TModel modelToUpdate = modelDto.ToModel();
-        
+
         OnBeforeUpdateModel(ref modelToUpdate);
-        
+
         TModel? updatedModel = await service.Update(id, modelToUpdate);
 
         return updatedModel is null ? NotFound() : Ok(GetDto(updatedModel));
     }
-    
+
     protected virtual void OnBeforeUpdateModel(ref TModel model)
     {
     }

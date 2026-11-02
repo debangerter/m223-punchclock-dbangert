@@ -17,7 +17,7 @@ public sealed class EntryDetailController(IService<EntryDetail> service) : Contr
 
         return Ok(models.Select(model => new EntryDetailDto(model)));
     }
-    
+
     [HttpGet("{id:int}")]
     [ProducesResponseType<EntryDetailDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetModel(int id)

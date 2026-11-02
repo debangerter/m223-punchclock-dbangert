@@ -44,6 +44,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql("Host=db;Database=punchclock;Username=postgres;Password=postgres");
+        optionsBuilder.UseNpgsql("Host=punchclock-db;Database=punchclock;Username=postgres;Password=postgres");
     }
 }

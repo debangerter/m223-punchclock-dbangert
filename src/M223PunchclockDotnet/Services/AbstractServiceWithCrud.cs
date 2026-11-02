@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace M223PunchclockDotnet.Services;
 
-public abstract class AbstractServiceWithCrud<TModel>(DatabaseContext databaseContext) : IService<TModel> 
+public abstract class AbstractServiceWithCrud<TModel>(DatabaseContext databaseContext) : IService<TModel>
     where TModel : AbstractDbModel
 {
     public Task<List<TModel>> FindAll()
@@ -50,8 +50,6 @@ public abstract class AbstractServiceWithCrud<TModel>(DatabaseContext databaseCo
         return existingModel;
     }
 
-    protected abstract void UpdateModel(TModel existingModel, TModel model);
-
     public async Task<TModel?> Update(int id, JsonPatchDocument<TModel> modelPatch)
     {
         if (await GetModelAsync(id) is not { } model) return null;
@@ -62,6 +60,8 @@ public abstract class AbstractServiceWithCrud<TModel>(DatabaseContext databaseCo
 
         return model;
     }
+
+    protected abstract void UpdateModel(TModel existingModel, TModel model);
 
     private Task<TModel?> GetModelAsync(int id)
     {
