@@ -1,16 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace M223PunchclockDotnet.Model.Dto;
+namespace M223PunchclockDotnet.Models.Dto;
 
 public record EntryDto : AbstractDto<Entry>
 {
     [JsonConstructor]
-    public EntryDto(int id, DateTime? checkIn, DateTime? checkOut)
+    public EntryDto(int id, DateTime? checkIn, DateTime? checkOut, int? categoryId, ICollection<int> tagIds)
     {
         Id = id;
         CheckIn = checkIn;
         CheckOut = checkOut;
+        CategoryId = categoryId;
+        TagIds = tagIds;
     }
 
     public EntryDto(Entry model) : base(model)
@@ -18,15 +20,19 @@ public record EntryDto : AbstractDto<Entry>
         Id = model.Id;
         CheckIn = model.CheckIn;
         CheckOut = model.CheckOut;
+        CategoryId = model.CategoryId;
+        TagIds = [.. model.Tags.Select(tag => tag.Id)];
     }
-
-    public int Id { get; }
 
     [Required(ErrorMessage = "Missing Check-In")]
     public DateTime? CheckIn { get; }
 
     [Required(ErrorMessage = "Missing Check-Out")]
     public DateTime? CheckOut { get; }
+
+    public int? CategoryId { get; }
+
+    public ICollection<int> TagIds { get; private set; } = [];
 
     public override Entry ToModel()
     {

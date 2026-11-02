@@ -1,62 +1,75 @@
-using System.Net.Mime;
-using M223PunchclockDotnet.Model;
-using M223PunchclockDotnet.Model.Dto;
-using M223PunchclockDotnet.Service;
+using M223PunchclockDotnet.Models;
+using M223PunchclockDotnet.Models.Dto;
+using M223PunchclockDotnet.Services;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 
-namespace M223PunchclockDotnet.Controllers
+namespace M223PunchclockDotnet.Controllers;
+
+[Route("entries")]
+public sealed class EntryController(IService<Entry> service, IService<Tag> tagService)
+    : AbstractController<EntryDto, Entry>(service)
 {
-    [ApiController]
-    [Route("entries")]
-    public class EntryController(EntryService entryService) : ControllerBase
+    [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
+    public override Task<IActionResult> GetModels()
     {
-        [HttpGet]
-        [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get()
+        return base.GetModels();
+    }
+
+    [ProducesResponseType<string>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<EntryDto>(StatusCodes.Status201Created)]
+    public override async Task<IActionResult> AddModel(EntryDto modelDto)
+    {
+        string? invalidTagId = await ValidateTagIdsAsync(modelDto);
+
+        if (!string.IsNullOrWhiteSpace(invalidTagId)) return NotFound(invalidTagId);
+
+        return await base.AddModel(modelDto);
+    }
+
+    protected override async Task OnBeforeAddModelAsync(EntryDto modelDto, Entry model)
+    {
+        await base.OnBeforeAddModelAsync(modelDto, model);
+
+        model.Tags = [.. await GetTagsAsync(modelDto)];
+    }
+
+
+    [ProducesResponseType<string>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
+    public override async Task<IActionResult> UpdateEntry(int id, EntryDto modelDto)
+    {
+        string? invalidTagId = await ValidateTagIdsAsync(modelDto);
+
+        if (!string.IsNullOrWhiteSpace(invalidTagId)) return NotFound(invalidTagId);
+
+        return await base.UpdateEntry(id, modelDto);
+    }
+
+    [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
+    public override Task<IActionResult> PatchEntry(int id, JsonPatchDocument<Entry> modelPatch)
+    {
+        return base.PatchEntry(id, modelPatch);
+    }
+
+    private async Task<string?> ValidateTagIdsAsync(EntryDto modelDto)
+    {
+        List<Tag> tags = await tagService.FindAll();
+        HashSet<int> tagIds = [.. tags.Select(tag => tag.Id)];
+
+        foreach (int tagId in modelDto.TagIds)
         {
-            List<Entry> entries = await entryService.FindAll();
-            return Ok(entries.Select(entry => new EntryDto(entry)));
+            if (!tagIds.Contains(tagId))
+                return $"{nameof(Tag)}-ID {tagId}";
         }
 
-        [HttpPost]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType<EntryDto>(StatusCodes.Status201Created)]
-        public async Task<ActionResult<EntryDto>> AddEntry([FromBody] EntryDto entryDto)
-        {
-            Entry newEntry = await entryService.AddEntry(entryDto.ToModel());
-            EntryDto newEntryDto = new(newEntry);
-            return CreatedAtAction(nameof(Get), new { id = newEntryDto.Id }, newEntryDto);
-        }
+        return null;
+    }
 
-        [HttpDelete("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeleteEntry(int id)
-        {
-            var successful = await entryService.DeleteEntry(id);
-            return successful ? NoContent() : NotFound();
-        }
+    private async Task<IEnumerable<Tag>> GetTagsAsync(EntryDto modelDto)
+    {
+        List<Tag> tags = await tagService.FindAll();
 
-        [HttpPut("{id:int}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateEntry(int id, [FromBody] EntryDto entryDto)
-        {
-            Entry? updatedEntry = await entryService.UpdateEntry(id, entryDto.ToModel());
-
-            return updatedEntry is null ? NotFound() : Ok(new EntryDto(updatedEntry));
-        }
-
-        [HttpPatch("{id:int}")]
-        [Consumes(MediaTypeNames.Application.JsonPatch)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType<EntryDto>(StatusCodes.Status200OK)]
-        public async Task<IActionResult> PatchEntry(int id, [FromBody] JsonPatchDocument<Entry> entryPatch)
-        {
-            Entry? updatedEntry = await entryService.UpdateEntry(id, entryPatch);
-
-            return updatedEntry is null ? NotFound() : Ok(new EntryDto(updatedEntry));
-        }
+        return tags.Where(tag => modelDto.TagIds.Contains(tag.Id));
     }
 }

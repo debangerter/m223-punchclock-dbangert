@@ -1,13 +1,14 @@
+using M223PunchclockDotnet.Database;
+using M223PunchclockDotnet.Models;
+using M223PunchclockDotnet.Services;
 using Microsoft.EntityFrameworkCore;
-using M223PunchclockDotnet.Service;
-using M223PunchclockDotnet.Model;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-    
+
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql("Host=db;Database=postgres;Username=postgres;Password=postgres"));
 
@@ -15,10 +16,12 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IService<Category>, CategoryService>();
+builder.Services.AddScoped<IService<Entry>, EntryService>();
+builder.Services.AddScoped<IService<EntryDetail>, EntryDetailService>();
+builder.Services.AddScoped<IService<Tag>, TagService>();
 
-builder.Services.AddScoped<EntryService, EntryService>();
-
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -32,11 +35,12 @@ if (app.Environment.IsDevelopment())
 }
 
 
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
+    IServiceProvider services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<DatabaseContext>();
+    DatabaseContext context = services.GetRequiredService<DatabaseContext>();
+    context.Database.EnsureDeleted();
     context.Database.EnsureCreated();
     // DbInitializer.Initialize(context);
 }
