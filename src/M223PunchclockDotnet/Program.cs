@@ -17,8 +17,7 @@ builder.Services.AddScoped<ExampleDataService>();
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseNpgsql("Host=db;Database=postgres;Username=postgres;Password=postgres"));
+builder.Services.AddDbContext<DatabaseContext>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -43,8 +42,9 @@ using (IServiceScope scope = app.Services.CreateScope())
     IServiceProvider services = scope.ServiceProvider;
 
     DatabaseContext context = services.GetRequiredService<DatabaseContext>();
-    context.Database.EnsureDeleted();
-    context.Database.EnsureCreated();
+    
+    await context.Database.MigrateAsync();
+    
     // DbInitializer.Initialize(context);
 
     if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("Punchclock:ExampleData:Enabled"))

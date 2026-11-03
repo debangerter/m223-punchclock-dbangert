@@ -12,5 +12,7 @@ public class Entry : AbstractDbModel
 
     public Category? Category { get; set; }
 
+    [StringLength(255)] public string? Description { get; set; }
+
     public ICollection<Tag> Tags { get; set; } = [];
 }
