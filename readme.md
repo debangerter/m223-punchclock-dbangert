@@ -204,6 +204,7 @@ sequenceDiagram
 `List<object> CalculateSummaryPerDay(List<Entry> entries)`
 
 |Name|Entries|Erwartetes Resultat|
+|-|-|-|
 |`NoEntriesProvided_ReturnsEmptyList`|`[]`|`[]`|
 |`OneEntry_CheckoutIsBeforeCheckin_ThrowsArgumentException`|`[{"checkin":"02-11-2026T16:30:00.0000", "checkout": "02-11-2026T10:30:00.0000"}]`|`ArgumentException(nameof(entries))`|
 |`OneEntry_CheckoutIsOnNextDay_ReturnsUntilAndFromMidnight`|`[{"checkin":"02-11-2026T16:30:00.0000", "checkout": "03-11-2026T10:30:00.0000"}]`|`[{"02-11-2026": "07:30:00"}, {"03-11-2026": "10:30:00"}]`|
