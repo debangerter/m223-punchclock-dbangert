@@ -11,6 +11,8 @@ builder.Services.AddScoped<IService<Entry>, EntryService>();
 builder.Services.AddScoped<IService<EntryDetail>, EntryDetailService>();
 builder.Services.AddScoped<IService<Tag>, TagService>();
 
+builder.Services.AddScoped<ITimeSummaryService, TimeSummaryService>();
+
 builder.Services.AddScoped<ExampleDataService>();
 
 builder.Services.AddControllers();
